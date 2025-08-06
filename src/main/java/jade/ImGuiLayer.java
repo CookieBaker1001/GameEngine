@@ -177,7 +177,7 @@ public class ImGuiLayer {
         startFrame(dt);
 
         //imGuiGlfw.newFrame();
-        //ImGui.newFrame();
+        imGuiGl3.newFrame();
 
         // Any Dear ImGui code SHOULD go between ImGui.newFrame()/ImGui.render() methods
         ImGui.newFrame();
@@ -213,8 +213,7 @@ public class ImGuiLayer {
         // After Dear ImGui prepared a draw data, we use it in the LWJGL3 renderer.
         // At that moment ImGui will be rendered to the current OpenGL context.
         //imGuiGl3.render(ImGui.getDrawData());
-        //ImGui.render();
-        //imGuiGl3.renderDrawData(ImGui.getDrawData());
+        imGuiGl3.renderDrawData(ImGui.getDrawData());
         //imGuiGl3.renderDrawData(ImGui.getDrawData());
         //ImGui.render();
     }
