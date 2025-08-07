@@ -1,8 +1,15 @@
 package jade;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import imgui.ImGui;
 import renderer.Renderer;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +20,7 @@ public abstract class Scene {
     private boolean isRunning = false;
     protected List<GameObject> gameObjects = new ArrayList<>();
     protected GameObject activeGameObject = null;
+    protected boolean levelLoaded = false;
 
     public Scene() {
 
@@ -58,5 +66,43 @@ public abstract class Scene {
 
     public void imgui() {
 
+    }
+
+    public void saveExit() {
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(Component.class, new ComponentDeserializer())
+                .registerTypeAdapter(GameObject.class, new GameObjectDeserializer())
+                .setPrettyPrinting()
+                .create();
+        try {
+            FileWriter fileWriter = new FileWriter("level.txt");
+            fileWriter.write(gson.toJson(gameObjects));
+            fileWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void load() {
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(Component.class, new ComponentDeserializer())
+                .registerTypeAdapter(GameObject.class, new GameObjectDeserializer())
+                .setPrettyPrinting()
+                .create();
+
+        String inFile = "";
+        try {
+            inFile = new String(Files.readAllBytes(Paths.get("level.txt")));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (!inFile.equals("")) {
+            GameObject[] objs = gson.fromJson(inFile, GameObject[].class);
+            for (int i = 0; i < objs.length; i++) {
+                addGameObjectToScene(objs[i]);
+            }
+            this.levelLoaded = true;
+        }
     }
 }
