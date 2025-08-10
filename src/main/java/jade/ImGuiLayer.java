@@ -8,11 +8,14 @@ import imgui.callback.ImStrConsumer;
 import imgui.callback.ImStrSupplier;
 import imgui.flag.*;
 import imgui.gl3.ImGuiImplGl3;
+import org.lwjgl.glfw.GLFW;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -44,30 +47,30 @@ public class ImGuiLayer {
 
         // ------------------------------------------------------------
         // Keyboard mapping. ImGui will use those indices to peek into the io.KeysDown[] array.
-        final int[] keyMap = new int[ImGuiKey.COUNT];
-        keyMap[ImGuiKey.Tab] = GLFW_KEY_TAB;
-        keyMap[ImGuiKey.LeftArrow] = GLFW_KEY_LEFT;
-        keyMap[ImGuiKey.RightArrow] = GLFW_KEY_RIGHT;
-        keyMap[ImGuiKey.UpArrow] = GLFW_KEY_UP;
-        keyMap[ImGuiKey.DownArrow] = GLFW_KEY_DOWN;
-        keyMap[ImGuiKey.PageUp] = GLFW_KEY_PAGE_UP;
-        keyMap[ImGuiKey.PageDown] = GLFW_KEY_PAGE_DOWN;
-        keyMap[ImGuiKey.Home] = GLFW_KEY_HOME;
-        keyMap[ImGuiKey.End] = GLFW_KEY_END;
-        keyMap[ImGuiKey.Insert] = GLFW_KEY_INSERT;
-        keyMap[ImGuiKey.Delete] = GLFW_KEY_DELETE;
-        keyMap[ImGuiKey.Backspace] = GLFW_KEY_BACKSPACE;
-        keyMap[ImGuiKey.Space] = GLFW_KEY_SPACE;
-        keyMap[ImGuiKey.Enter] = GLFW_KEY_ENTER;
-        keyMap[ImGuiKey.Escape] = GLFW_KEY_ESCAPE;
-        keyMap[ImGuiKey.KeyPadEnter] = GLFW_KEY_KP_ENTER;
-        keyMap[ImGuiKey.A] = GLFW_KEY_A;
-        keyMap[ImGuiKey.C] = GLFW_KEY_C;
-        keyMap[ImGuiKey.V] = GLFW_KEY_V;
-        keyMap[ImGuiKey.X] = GLFW_KEY_X;
-        keyMap[ImGuiKey.Y] = GLFW_KEY_Y;
-        keyMap[ImGuiKey.Z] = GLFW_KEY_Z;
-        io.setKeyMap(keyMap);
+//        final int[] keyMap = new int[ImGuiKey.COUNT];
+//        keyMap[ImGuiKey.Tab] = GLFW_KEY_TAB;
+//        keyMap[ImGuiKey.LeftArrow] = GLFW_KEY_LEFT;
+//        keyMap[ImGuiKey.RightArrow] = GLFW_KEY_RIGHT;
+//        keyMap[ImGuiKey.UpArrow] = GLFW_KEY_UP;
+//        keyMap[ImGuiKey.DownArrow] = GLFW_KEY_DOWN;
+//        keyMap[ImGuiKey.PageUp] = GLFW_KEY_PAGE_UP;
+//        keyMap[ImGuiKey.PageDown] = GLFW_KEY_PAGE_DOWN;
+//        keyMap[ImGuiKey.Home] = GLFW_KEY_HOME;
+//        keyMap[ImGuiKey.End] = GLFW_KEY_END;
+//        keyMap[ImGuiKey.Insert] = GLFW_KEY_INSERT;
+//        keyMap[ImGuiKey.Delete] = GLFW_KEY_DELETE;
+//        keyMap[ImGuiKey.Backspace] = GLFW_KEY_BACKSPACE;
+//        keyMap[ImGuiKey.Space] = GLFW_KEY_SPACE;
+//        keyMap[ImGuiKey.Enter] = GLFW_KEY_ENTER;
+//        keyMap[ImGuiKey.Escape] = GLFW_KEY_ESCAPE;
+//        keyMap[ImGuiKey.KeyPadEnter] = GLFW_KEY_KP_ENTER;
+//        keyMap[ImGuiKey.A] = GLFW_KEY_A;
+//        keyMap[ImGuiKey.C] = GLFW_KEY_C;
+//        keyMap[ImGuiKey.V] = GLFW_KEY_V;
+//        keyMap[ImGuiKey.X] = GLFW_KEY_X;
+//        keyMap[ImGuiKey.Y] = GLFW_KEY_Y;
+//        keyMap[ImGuiKey.Z] = GLFW_KEY_Z;
+//        io.setKeyMap(keyMap);
 
         // ------------------------------------------------------------
         // Mouse cursors mapping
@@ -83,45 +86,67 @@ public class ImGuiLayer {
 
         // ------------------------------------------------------------
         // GLFW callbacks to handle user input
-
         glfwSetKeyCallback(glfwWindow, (w, key, scancode, action, mods) -> {
-            if (action == GLFW_PRESS) {
-                io.setKeysDown(key, true);
-            } else if (action == GLFW_RELEASE) {
-                io.setKeysDown(key, false);
+//            if (action == GLFW_PRESS) {
+//                io.setKeysDown(key, true);
+//            } else if (action == GLFW_RELEASE) {
+//                io.setKeysDown(key, false);
+//            }
+//
+//            io.setKeyCtrl(io.getKeysDown(GLFW_KEY_LEFT_CONTROL) || io.getKeysDown(GLFW_KEY_RIGHT_CONTROL));
+//            io.setKeyShift(io.getKeysDown(GLFW_KEY_LEFT_SHIFT) || io.getKeysDown(GLFW_KEY_RIGHT_SHIFT));
+//            io.setKeyAlt(io.getKeysDown(GLFW_KEY_LEFT_ALT) || io.getKeysDown(GLFW_KEY_RIGHT_ALT));
+//            io.setKeySuper(io.getKeysDown(GLFW_KEY_LEFT_SUPER) || io.getKeysDown(GLFW_KEY_RIGHT_SUPER));
+
+            boolean pressed = action != GLFW_RELEASE;
+
+            // Modern ImGui key input
+            Integer imguiKey = glfwToImGuiKeyMap.get(key);
+            if (imguiKey != null) {
+                io.addKeyEvent(imguiKey, pressed);
             }
 
-            io.setKeyCtrl(io.getKeysDown(GLFW_KEY_LEFT_CONTROL) || io.getKeysDown(GLFW_KEY_RIGHT_CONTROL));
-            io.setKeyShift(io.getKeysDown(GLFW_KEY_LEFT_SHIFT) || io.getKeysDown(GLFW_KEY_RIGHT_SHIFT));
-            io.setKeyAlt(io.getKeysDown(GLFW_KEY_LEFT_ALT) || io.getKeysDown(GLFW_KEY_RIGHT_ALT));
-            io.setKeySuper(io.getKeysDown(GLFW_KEY_LEFT_SUPER) || io.getKeysDown(GLFW_KEY_RIGHT_SUPER));
+            io.addKeyEvent(ImGuiKey.ModCtrl,  (mods & GLFW_MOD_CONTROL) != 0);
+            io.addKeyEvent(ImGuiKey.ModShift, (mods & GLFW_MOD_SHIFT) != 0);
+            io.addKeyEvent(ImGuiKey.ModAlt,   (mods & GLFW_MOD_ALT) != 0);
+            io.addKeyEvent(ImGuiKey.ModSuper, (mods & GLFW_MOD_SUPER) != 0);
         });
 
         glfwSetCharCallback(glfwWindow, (w, c) -> {
-            if (c != GLFW_KEY_DELETE) {
-                io.addInputCharacter(c);
-            }
+//            if (c != GLFW_KEY_DELETE) {
+//                io.addInputCharacter(c);
+//            }
+            io.addInputCharacter(c);
         });
 
         glfwSetMouseButtonCallback(glfwWindow, (w, button, action, mods) -> {
-            final boolean[] mouseDown = new boolean[5];
+//            final boolean[] mouseDown = new boolean[5];
+//
+//            mouseDown[0] = button == GLFW_MOUSE_BUTTON_1 && action != GLFW_RELEASE;
+//            mouseDown[1] = button == GLFW_MOUSE_BUTTON_2 && action != GLFW_RELEASE;
+//            mouseDown[2] = button == GLFW_MOUSE_BUTTON_3 && action != GLFW_RELEASE;
+//            mouseDown[3] = button == GLFW_MOUSE_BUTTON_4 && action != GLFW_RELEASE;
+//            mouseDown[4] = button == GLFW_MOUSE_BUTTON_5 && action != GLFW_RELEASE;
+//
+//            io.setMouseDown(mouseDown);
+//
+//            if (!io.getWantCaptureMouse() && mouseDown[1]) {
+//                ImGui.setWindowFocus(null);
+//            }
 
-            mouseDown[0] = button == GLFW_MOUSE_BUTTON_1 && action != GLFW_RELEASE;
-            mouseDown[1] = button == GLFW_MOUSE_BUTTON_2 && action != GLFW_RELEASE;
-            mouseDown[2] = button == GLFW_MOUSE_BUTTON_3 && action != GLFW_RELEASE;
-            mouseDown[3] = button == GLFW_MOUSE_BUTTON_4 && action != GLFW_RELEASE;
-            mouseDown[4] = button == GLFW_MOUSE_BUTTON_5 && action != GLFW_RELEASE;
+            boolean pressed = action != GLFW_RELEASE;
+            io.addMouseButtonEvent(button, pressed);
 
-            io.setMouseDown(mouseDown);
-
-            if (!io.getWantCaptureMouse() && mouseDown[1]) {
+            if (!io.getWantCaptureMouse() && button == GLFW_MOUSE_BUTTON_RIGHT && pressed) {
                 ImGui.setWindowFocus(null);
             }
         });
 
         glfwSetScrollCallback(glfwWindow, (w, xOffset, yOffset) -> {
-            io.setMouseWheelH(io.getMouseWheelH() + (float) xOffset);
-            io.setMouseWheel(io.getMouseWheel() + (float) yOffset);
+//            io.setMouseWheelH(io.getMouseWheelH() + (float) xOffset);
+//            io.setMouseWheel(io.getMouseWheel() + (float) yOffset);
+
+            io.addMouseWheelEvent((float) xOffset, (float) yOffset);
         });
 
         io.setSetClipboardTextFn(new ImStrConsumer() {
@@ -173,6 +198,35 @@ public class ImGuiLayer {
         // ImGui context should be created as well.
         imGuiGl3.init("#version 330 core");
     }
+
+    private static final Map<Integer, Integer> glfwToImGuiKeyMap = new HashMap<>();
+
+    static {
+        glfwToImGuiKeyMap.put(GLFW_KEY_TAB, ImGuiKey.Tab);
+        glfwToImGuiKeyMap.put(GLFW_KEY_LEFT, ImGuiKey.LeftArrow);
+        glfwToImGuiKeyMap.put(GLFW_KEY_RIGHT, ImGuiKey.RightArrow);
+        glfwToImGuiKeyMap.put(GLFW_KEY_UP, ImGuiKey.UpArrow);
+        glfwToImGuiKeyMap.put(GLFW_KEY_DOWN, ImGuiKey.DownArrow);
+        glfwToImGuiKeyMap.put(GLFW_KEY_PAGE_UP, ImGuiKey.PageUp);
+        glfwToImGuiKeyMap.put(GLFW_KEY_PAGE_DOWN, ImGuiKey.PageDown);
+        glfwToImGuiKeyMap.put(GLFW_KEY_HOME, ImGuiKey.Home);
+        glfwToImGuiKeyMap.put(GLFW_KEY_END, ImGuiKey.End);
+        glfwToImGuiKeyMap.put(GLFW_KEY_INSERT, ImGuiKey.Insert);
+        glfwToImGuiKeyMap.put(GLFW_KEY_DELETE, ImGuiKey.Delete);
+        glfwToImGuiKeyMap.put(GLFW_KEY_BACKSPACE, ImGuiKey.Backspace);
+        glfwToImGuiKeyMap.put(GLFW_KEY_SPACE, ImGuiKey.Space);
+        glfwToImGuiKeyMap.put(GLFW_KEY_ENTER, ImGuiKey.Enter);
+        glfwToImGuiKeyMap.put(GLFW_KEY_ESCAPE, ImGuiKey.Escape);
+        glfwToImGuiKeyMap.put(GLFW_KEY_KP_ENTER, ImGuiKey.KeypadEnter);
+        glfwToImGuiKeyMap.put(GLFW_KEY_A, ImGuiKey.A);
+        glfwToImGuiKeyMap.put(GLFW_KEY_C, ImGuiKey.C);
+        glfwToImGuiKeyMap.put(GLFW_KEY_V, ImGuiKey.V);
+        glfwToImGuiKeyMap.put(GLFW_KEY_X, ImGuiKey.X);
+        glfwToImGuiKeyMap.put(GLFW_KEY_Y, ImGuiKey.Y);
+        glfwToImGuiKeyMap.put(GLFW_KEY_Z, ImGuiKey.Z);
+        // ...you can extend with all other keys if you want full coverage
+    }
+
 
     public void update(float dt, Scene currentScene) {
 
